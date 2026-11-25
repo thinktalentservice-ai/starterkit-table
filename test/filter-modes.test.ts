@@ -55,3 +55,37 @@ describe("applyFilterModes", () => {
     expect(free?.size).toBeUndefined();
   });
 });
+
+describe("applyFilterModes: columns that bring their own filtering", () => {
+  it("returns a column whose filterFn is a function untouched", () => {
+    const col: MRT_ColumnDef<Row> = { accessorKey: "name", header: "N", filterFn: (row) => row.original.id > 1 };
+    expect(apply([col])[0]).toBe(col);
+  });
+
+  it("returns a column with an explicit non-text filterFn and no options untouched", () => {
+    const between: MRT_ColumnDef<Row> = { accessorKey: "id", header: "A", filterFn: "between" };
+    const fuzzy: MRT_ColumnDef<Row> = { accessorKey: "name", header: "B", filterFn: "fuzzy" };
+    const out = apply([between, fuzzy]);
+    expect(out[0]).toBe(between);
+    expect(out[1]).toBe(fuzzy);
+  });
+
+  it("keeps an explicit text filterFn and still limits the menu to text modes", () => {
+    const [col] = apply([{ accessorKey: "name", header: "N", filterFn: "equals" }]);
+    expect(col?.filterFn).toBe("equals");
+    expect(col?.columnFilterModeOptions).toEqual(TEXT_MODES);
+  });
+
+  it("does not set filterFn when the caller seeds the column's mode in initialState", () => {
+    const [col] = applyFilterModes<Row>([{ accessorKey: "name", header: "N" }], { columnFilterFns: { name: "startsWith" } });
+    expect(col?.filterFn).toBeUndefined();
+    expect(col?.columnFilterModeOptions).toEqual(TEXT_MODES);
+  });
+
+  it("matches initialState to the column by id before accessorKey", () => {
+    const [col] = applyFilterModes<Row>([{ id: "full", accessorFn: (r) => r.name, header: "N" }], {
+      columnFilterFns: { full: "endsWith" },
+    });
+    expect(col?.filterFn).toBeUndefined();
+  });
+});

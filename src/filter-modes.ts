@@ -12,7 +12,7 @@
 //
 // A column opts out by passing its own `columnFilterModeOptions` (and `filterFn`,
 // which must be one of them), or `enableColumnFilterModes: false`.
-import type { MRT_ColumnDef, MRT_RowData } from "material-react-table";
+import type { MRT_ColumnDef, MRT_RowData, MRT_TableState } from "material-react-table";
 
 export type FilterMode = "contains" | "startsWith" | "endsWith" | "equals" | "notEquals" | "empty" | "notEmpty";
 
@@ -37,22 +37,39 @@ const CLOSED_LIST = new Set(["select", "multi-select", "checkbox"]);
 const isSpecialVariant = (v: unknown): boolean =>
   typeof v === "string" && (v.includes("range") || v.startsWith("date") || v.startsWith("time"));
 
-function withModes<T extends MRT_RowData>(def: MRT_ColumnDef<T>): MRT_ColumnDef<T> {
-  if (def.columns) return { ...def, columns: def.columns.map(withModes) } as MRT_ColumnDef<T>;
+type SeededModes = Partial<MRT_TableState<MRT_RowData>>["columnFilterFns"];
+
+function withModes<T extends MRT_RowData>(def: MRT_ColumnDef<T>, seeded: SeededModes): MRT_ColumnDef<T> {
+  if (def.columns) return { ...def, columns: def.columns.map((c) => withModes(c, seeded)) } as MRT_ColumnDef<T>;
   if (def.enableColumnFilter === false) return def;
   if (def.filterVariant && CLOSED_LIST.has(def.filterVariant)) return { ...def, enableColumnFilterModes: false };
   if (isSpecialVariant(def.filterVariant)) return def;
+  // The caller owns the filtering: a custom function, or an explicit mode outside
+  // the text set ('between', 'fuzzy', ...) with no menu of their own. Offering text
+  // modes there would list options the current mode is not in, and picking one
+  // would discard the custom filter for good.
+  if (typeof def.filterFn === "function") return def;
+  if (def.filterFn && !def.columnFilterModeOptions && !(TEXT_MODES as string[]).includes(def.filterFn)) return def;
 
   const modes = def.columnFilterModeOptions ?? TEXT_MODES;
+  const id = def.id ?? (def as { accessorKey?: string }).accessorKey;
+  // A mode the caller seeded through initialState.columnFilterFns wins over our
+  // default: MRT reads `col.filterFn ?? initialState.columnFilterFns[id]`.
+  const callerSeeded = id !== undefined && seeded?.[id] !== undefined;
   return {
     ...def,
     columnFilterModeOptions: modes,
     // MRT starts every column on 'fuzzy'; start on a mode the column allows.
-    filterFn: def.filterFn ?? modes[0],
+    ...(callerSeeded ? {} : { filterFn: def.filterFn ?? modes[0] }),
     ...(def.size != null && { size: Math.max(def.size, MIN_FILTER_SIZE) }),
   } as MRT_ColumnDef<T>;
 }
 
-/** Returns `columns` with per-column filter-mode options filled in. */
-export const applyFilterModes = <T extends MRT_RowData>(columns: MRT_ColumnDef<T>[]): MRT_ColumnDef<T>[] =>
-  columns.map(withModes);
+/**
+ * Returns `columns` with per-column filter-mode options filled in. Pass the table's
+ * `initialState` so modes the caller seeded in `columnFilterFns` are not overridden.
+ */
+export const applyFilterModes = <T extends MRT_RowData>(
+  columns: MRT_ColumnDef<T>[],
+  initialState?: { columnFilterFns?: SeededModes },
+): MRT_ColumnDef<T>[] => columns.map((c) => withModes(c, initialState?.columnFilterFns));
