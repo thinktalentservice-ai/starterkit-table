@@ -138,3 +138,142 @@
 
 .skt-empty__title { font-size: 15px; font-weight: 600; color: var(--fg1); margin: 0; }
 .skt-empty__hint { font-size: 13px; color: var(--fg2); margin: 0; max-width: 42ch; }
+
+/* ── Table (material-react-table in the kit frame) ────────────────────── */
+/* Cell styling lives in the component's sx; this covers the chrome around it. */
+.skt-table {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skt-tools {
+  display: inline-flex;
+  gap: 2px;
+  color: var(--fg2);
+}
+
+.skt-tools .MuiIconButton-root { color: inherit; }
+.skt-tools .MuiIconButton-root:hover { color: var(--primary-text); background: var(--primary-bg); }
+
+/* Long descriptions stop at two lines; the expanded row or the edit form has the rest.
+   `pk-cell-muted` is the host's cell class, kept by name so existing pages keep working. */
+.skt-table td .pk-cell-muted {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Tables are page content, not cards: no outer border, no rounded corners, no
+   own surface. The header band and row hairlines carry the structure. */
+.skt-frame {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.skt-placeholder {
+  min-height: 420px;
+  background: var(--surface-elevated);
+}
+
+/* Selection strip: the frame's top edge turns into the bulk-action bar. */
+.skt-bulk {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 8px 16px;
+  background: var(--primary-bg);
+  border-bottom: 1px solid var(--primary-border);
+  font-size: 13px;
+  color: var(--fg2);
+  animation: skt-bulk-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.skt-bulk__count { font-variant-numeric: tabular-nums; }
+.skt-bulk__count b { color: var(--primary-text); font-weight: 700; }
+
+@keyframes skt-bulk-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skt-bulk { animation: none; }
+}
+
+.skt-rpp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg2);
+}
+
+.skt-rpp select {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--fg1);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.skt-rpp select:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Expanded row: what this row unlocks. */
+.skt-detail { padding: 4px 8px 4px 52px; }
+
+.skt-detail__summary {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--fg2);
+}
+
+.skt-detail__summary b { color: var(--fg1); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.skt-detail__empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+.skt-detail__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.skt-detail__list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+  min-width: 0;
+}
+
+.skt-detail__name { font-size: 13px; font-weight: 600; color: var(--fg1); }
+
+.skt-detail__desc {
+  font-size: 12px;
+  color: var(--fg2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+  .skt-detail { padding-left: 8px; }
+  .skt-tools { display: none; }
+}

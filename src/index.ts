@@ -6,3 +6,5 @@ export { EmptyState, Pager, ResultCount, RowActions, Toolbar } from "./chrome";
 export type { RenderLink, RowActionItem } from "./chrome";
 export { SearchInput } from "./search-input";
 export type { SearchInputProps } from "./search-input";
+export { KitDetail, KitTable } from "./kit-table";
+export type { KitTableProps } from "./kit-table";
