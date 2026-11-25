@@ -149,3 +149,85 @@ describe("KitDetail", () => {
     expect(screen.getByText("Nothing")).toBeInTheDocument();
   });
 });
+
+describe("KitTable toolbar options (search, filters, columns, density, full screen)", () => {
+  beforeEach(() => {
+    for (const name of TOKEN_NAMES) document.documentElement.style.setProperty(name, "rgb(10, 20, 30)");
+  });
+  afterEach(() => {
+    cleanup();
+    document.documentElement.removeAttribute("style");
+  });
+
+  const labels = () => ({
+    search: screen.queryByRole("textbox", { name: "Search..." }),
+    filters: screen.queryByRole("button", { name: "Show/Hide filters" }),
+    columns: screen.queryByRole("button", { name: "Show/Hide columns" }),
+    density: screen.queryByRole("button", { name: "Toggle density" }),
+    fullScreen: screen.queryByRole("button", { name: /full screen/i }),
+  });
+
+  it("by default shows search, filters and columns, and hides density and full screen", async () => {
+    render(table());
+    await screen.findByText("Alice");
+    const t = labels();
+    expect(t.search).not.toBeNull();
+    expect(t.filters).not.toBeNull();
+    expect(t.columns).not.toBeNull();
+    expect(t.density).toBeNull();
+    expect(t.fullScreen).toBeNull();
+  });
+
+  it("shows every option when all are switched on", async () => {
+    render(table({ toolbar: { search: true, filters: true, columns: true, density: true, fullScreen: true } }));
+    await screen.findByText("Alice");
+    for (const [name, el] of Object.entries(labels())) expect(el, name).not.toBeNull();
+  });
+
+  it("hides each option independently", async () => {
+    for (const key of ["search", "filters", "columns"] as const) {
+      const { unmount } = render(table({ toolbar: { [key]: false } }));
+      await screen.findByText("Alice");
+      const t = labels();
+      expect(t[key], `${key} hidden`).toBeNull();
+      for (const other of ["search", "filters", "columns"] as const) {
+        if (other !== key) expect(t[other], `${other} still shown`).not.toBeNull();
+      }
+      unmount();
+    }
+  });
+
+  it("cycles density comfortable, compact, spacious, as the MRT button does", async () => {
+    render(table({ toolbar: { density: true } }));
+    await screen.findByText("Alice");
+    const root = document.querySelector(".skt-table")!;
+    expect(root).toHaveAttribute("data-density", "comfortable");
+    await userEvent.click(screen.getByRole("button", { name: "Toggle density" }));
+    await waitFor(() => expect(root).toHaveAttribute("data-density", "compact"));
+    await userEvent.click(screen.getByRole("button", { name: "Toggle density" }));
+    await waitFor(() => expect(root).toHaveAttribute("data-density", "spacious"));
+    await userEvent.click(screen.getByRole("button", { name: "Toggle density" }));
+    await waitFor(() => expect(root).toHaveAttribute("data-density", "comfortable"));
+  });
+
+  it("enters full screen from the button and leaves it with the button or Escape", async () => {
+    render(table({ toolbar: { fullScreen: true } }));
+    await screen.findByText("Alice");
+    const root = document.querySelector(".skt-table")!;
+    expect(root).not.toHaveClass("skt-table--fullscreen");
+    await userEvent.click(screen.getByRole("button", { name: "Full screen" }));
+    expect(root).toHaveClass("skt-table--fullscreen");
+    expect(screen.getByRole("button", { name: "Exit full screen" })).toHaveAttribute("aria-pressed", "true");
+    await userEvent.click(screen.getByRole("button", { name: "Exit full screen" }));
+    expect(root).not.toHaveClass("skt-table--fullscreen");
+    await userEvent.click(screen.getByRole("button", { name: "Full screen" }));
+    await userEvent.keyboard("{Escape}");
+    expect(root).not.toHaveClass("skt-table--fullscreen");
+  });
+
+  it("honours an initial density from initialState", async () => {
+    render(table({ toolbar: { fullScreen: true }, initialState: { density: "compact" } }));
+    await screen.findByText("Alice");
+    expect(document.querySelector(".skt-table")).toHaveAttribute("data-density", "compact");
+  });
+});

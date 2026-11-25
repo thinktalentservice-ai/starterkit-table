@@ -156,6 +156,16 @@
   gap: 12px;
 }
 
+/* Full screen: the whole table (toolbar, rows, pager) fills the viewport. */
+.skt-table--fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  padding: 16px 24px;
+  overflow: auto;
+  background: var(--card);
+}
+
 .skt-tools {
   display: inline-flex;
   gap: 2px;

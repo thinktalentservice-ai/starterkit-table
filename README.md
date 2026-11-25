@@ -13,7 +13,7 @@ pnpm add @devopsnext/starterkit-table@<version>
 ```
 
 Peers (install them in the host, one copy each): `react`, `react-dom` (>=18),
-`@mui/material` (>=9), `@mui/icons-material` (>=6, imported by material-react-table), `@mui/x-date-pickers`, `material-react-table` (^3.2.1),
+`@mui/material` (>=9), `@mui/icons-material` (>=6, imported by material-react-table),  `@mui/x-date-pickers`, `material-react-table` (^3.2.1),
 `@emotion/react`, `@emotion/styled`, and `@devopsnext/starterkit-theme` (>=1.7.0).
 
 ## Use
@@ -64,6 +64,29 @@ straight to `useMaterialReactTable`. The full contract is the doc comment on
 
 `renderLink` renders row-action items that have `to`. Without it they are plain
 `<a href>`; pass your router's link to get client-side navigation.
+
+### Toolbar options
+
+Every control the material-react-table toolbar offers is available, and each one
+is switched on or off with the `toolbar` prop:
+
+```jsx
+<KitTable {...props} toolbar={{ search: true, filters: true, columns: true, density: true, fullScreen: true }} />
+<KitTable {...props} toolbar={{ search: false, columns: false }} />   // hide some, keep the rest
+```
+
+| Option | Control | Default |
+|---|---|---|
+| `search` | search box | on |
+| `filters` | show/hide the per-column filter row | on |
+| `columns` | show/hide columns menu | on |
+| `density` | row density: comfortable, compact, spacious (`initialState.density` sets the start) | off |
+| `fullScreen` | table fills the viewport; Esc or the button leaves | off |
+
+Defaults keep the kit's look (the first three on). Other material-react-table
+options (grouping, column ordering, pinning, faceted values, filter variants such as
+`multi-select`, `range-slider`, `date`) are passed straight through to
+`useMaterialReactTable`; they are MRT's own, not re-tested here.
 
 ### Filter modes
 

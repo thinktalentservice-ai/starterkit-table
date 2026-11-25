@@ -1,14 +1,19 @@
-import { isValidElement, useMemo, useState } from "react";
+import { isValidElement, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import Checkbox from "@mui/material/Checkbox";
+import IconButton from "@mui/material/IconButton";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import { ThemeProvider } from "@mui/material/styles";
 import {
   MaterialReactTable,
   MRT_ShowHideColumnsButton,
+  MRT_ToggleDensePaddingButton,
   MRT_ToggleFiltersButton,
   useMaterialReactTable,
 } from "material-react-table";
 import type {
+  MRT_DensityState,
   MRT_ColumnDef,
   MRT_RowData,
   MRT_RowSelectionState,
@@ -48,6 +53,8 @@ import { useConcreteMuiTheme } from "./use-concrete-mui-theme";
  * - `selectionResetKey`: the selection clears whenever this value changes.
  * - Selection drops rows that are no longer in `data` (after a refetch); the
  *   header checkbox selects every row that matches the search, across pages.
+ * - `toolbar`: show or hide each control (search, filters, columns, density, fullScreen);
+ *   see KitToolbarOptions. Defaults: search, filters, columns on; density, fullScreen off.
  * - `emptyIcon`, `searchAriaLabel`: page-specific empty-state icon and search label.
  * - `pageSizes`: rows-per-page choices; the first is the default.
  * - `countAtEnd`: show the count as "Showing X of Y" at the toolbar's right end.
@@ -124,14 +131,47 @@ const headCellSx = {
 // The row itself paints nothing (fill + corners live on the cells, headCellSx).
 const headRowSx = { background: "none", boxShadow: "none" };
 
-const bodyCellSx = {
-  height: 58,
-  py: 1.5,
+// Row height follows MRT's density toggle. "comfortable" is the kit's default look
+// (58px rows); the other two are the compact and roomy steps either side of it.
+const BODY_ROW: Record<MRT_DensityState, { height: number; py: number }> = {
+  compact: { height: 42, py: 0.5 },
+  comfortable: { height: 58, py: 1.5 },
+  spacious: { height: 74, py: 2.25 },
+};
+
+const bodyCellSx = (density: MRT_DensityState) => ({
+  ...BODY_ROW[density],
   px: 2,
   borderBottom: "1px solid var(--border)",
   fontSize: "14px",
   color: "var(--fg1)",
   verticalAlign: "middle",
+});
+
+/**
+ * Which toolbar controls show. Every control the material-react-table toolbar
+ * offers is available; each is switched on or off here. Defaults keep the kit's
+ * look: search, filter toggle and column toggle on; density and full screen off.
+ */
+export type KitToolbarOptions = {
+  /** The search box. */
+  search?: boolean;
+  /** Show/hide the per-column filter row. */
+  filters?: boolean;
+  /** Show/hide columns menu. */
+  columns?: boolean;
+  /** Row density toggle: comfortable (default), compact, spacious. */
+  density?: boolean;
+  /** Expand the table (toolbar, rows, pager) to fill the viewport; Esc leaves. */
+  fullScreen?: boolean;
+};
+
+const TOOLBAR_DEFAULTS: Required<KitToolbarOptions> = {
+  search: true,
+  filters: true,
+  columns: true,
+  density: false,
+  fullScreen: false,
 };
 
 export type KitTableProps<T extends MRT_RowData> = Omit<
@@ -144,6 +184,8 @@ export type KitTableProps<T extends MRT_RowData> = Omit<
   isLoading?: boolean;
   noun?: string;
   searchPlaceholder?: string;
+  /** Show or hide each toolbar control; see KitToolbarOptions for the defaults. */
+  toolbar?: KitToolbarOptions;
   actions?: ReactNode;
   bulkActions?: (rows: T[], clear: () => void) => ReactNode;
   rowActions?: (row: T) => RowActionItem[] | ReactNode;
@@ -231,6 +273,7 @@ function KitTableInner<T extends MRT_RowData>({
   isLoading = false,
   noun = "rows",
   searchPlaceholder = "Search...",
+  toolbar,
   actions,
   bulkActions,
   rowActions,
@@ -256,8 +299,22 @@ function KitTableInner<T extends MRT_RowData>({
   ...options
 }: KitTableProps<T>) {
   "use no memo";
+  const tools = { ...TOOLBAR_DEFAULTS, ...toolbar };
   const [globalFilter, setGlobalFilter] = useState("");
   const query = globalFilter.trim();
+
+  const [fullScreen, setFullScreen] = useState(false);
+  // Esc leaves full screen, unless it is closing a menu or dialog first.
+  useEffect(() => {
+    if (!fullScreen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.defaultPrevented) return;
+      if (document.querySelector('[role="menu"], [role="dialog"], [role="listbox"]')) return;
+      setFullScreen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [fullScreen]);
 
   // Reset during render, not in an effect: React's pattern for state derived
   // from a prop change, and it avoids one render with the stale query.
@@ -417,7 +474,7 @@ function KitTableInner<T extends MRT_RowData>({
     muiTableProps: { sx: { borderCollapse: "separate", borderSpacing: 0 } },
     muiTableHeadRowProps: { sx: headRowSx },
     muiTableHeadCellProps: { sx: headCellSx },
-    muiTableBodyCellProps: { sx: bodyCellSx },
+    muiTableBodyCellProps: ({ table: t }) => ({ sx: bodyCellSx(t.getState().density) }),
     muiTableBodyRowProps: ({ row }) => ({
       className: getRowClassName?.(row.original),
       sx: {
@@ -452,9 +509,14 @@ function KitTableInner<T extends MRT_RowData>({
   const shown = table.getFilteredRowModel().rows.length;
 
   return (
-    <div className="skt-table">
+    <div
+      className={`skt-table${fullScreen ? " skt-table--fullscreen" : ""}`}
+      data-density={table.getState().density}
+    >
       <Toolbar>
-        <SearchInput value={globalFilter} onChange={setGlobalFilter} placeholder={searchPlaceholder} aria-label={searchAriaLabel} />
+        {tools.search && (
+          <SearchInput value={globalFilter} onChange={setGlobalFilter} placeholder={searchPlaceholder} aria-label={searchAriaLabel} />
+        )}
         {filters}
         {!isLoading && !countAtEnd && <ResultCount shown={shown} total={total ?? data.length} noun={noun} />}
         <span className="skt-toolbar__spacer" />
@@ -464,8 +526,20 @@ function KitTableInner<T extends MRT_RowData>({
           </span>
         )}
         <span className="skt-tools">
-          <MRT_ToggleFiltersButton table={table} size="small" />
-          <MRT_ShowHideColumnsButton table={table} size="small" />
+          {tools.filters && <MRT_ToggleFiltersButton table={table} size="small" />}
+          {tools.columns && <MRT_ShowHideColumnsButton table={table} size="small" />}
+          {tools.density && <MRT_ToggleDensePaddingButton table={table} size="small" />}
+          {tools.fullScreen && (
+            <IconButton
+              size="small"
+              aria-label={fullScreen ? "Exit full screen" : "Full screen"}
+              aria-pressed={fullScreen}
+              title={fullScreen ? "Exit full screen" : "Full screen"}
+              onClick={() => setFullScreen((v) => !v)}
+            >
+              {fullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+            </IconButton>
+          )}
         </span>
         {actions}
       </Toolbar>
