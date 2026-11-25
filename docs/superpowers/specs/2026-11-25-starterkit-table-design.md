@@ -86,8 +86,13 @@ optional)**: the library imports `useConcreteTheme` (`/react`) and
   `createStarterkitTheme()` (its `typography` and `components`, which are static
   `var()` objects, so they are MRT-safe); only the palette is replaced with
   concrete colours resolved from the tokens. The library therefore does not
-  depend on what the host passed to its own `ThemeProvider`. All colours, radii,
-  fonts and shadows in `styles.css` are the theme's `var(--token)`s.
+  depend on what the host passed to its own `ThemeProvider`. All colours,
+  fonts and shadows in `styles.css` are the theme's `var(--token)`s. **Radii are
+  the exception (ruled 2026-11-26):** they stay px literals (10px header band and
+  pager, 8px buttons, 12px empty-state icon), because the theme's radii differ per
+  scheme (`--radius` 12px dark / 8px light, `--radius-chip` 16 / 6,
+  `--radius-card` 20 / 12) and the app's table never followed them. Mapping would
+  change pixels in one scheme, and visual parity is the acceptance test.
 
 **Namespacing.** Library classes use an `skt-` prefix (`skt-table`,
 `skt-toolbar`, `skt-pager`, ...) so they cannot clash with the app's
