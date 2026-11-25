@@ -19,7 +19,8 @@
 
 ## Global Constraints
 
-- Never `npm publish`, `git push` to a shared branch, or open/merge a PR without the user saying so for that step (each is a stop).
+- **Use pnpm, not npm,** for everything in this repo (install, scripts, pack, publish, view, whoami). Publish from `main` with `pnpm publish --access public` (pnpm checks branch and clean tree; `--no-git-checks` only for a dry run elsewhere).
+- Never `pnpm publish`, `git push` to a shared branch, or open/merge a PR without the user saying so for that step (each is a stop).
 - PRs for the host go to `thinktalentservice-ai/nextv3-system-owner2-react` (origin), never upstream.
 - The host pin ends as a bare exact version (`"0.1.0"`), no caret, no `file:`.
 - Visual parity is the acceptance test: 0 differing pixels (every 2nd px, RGB delta > 12) against the `before-*` baselines in light scheme, on every page touched.
@@ -38,7 +39,7 @@
 
 ## Open decisions (need the user's answer before Stage 2)
 
-1. **Who runs `npm publish`.** `npm whoami` here is `devopsnext`, so publishing from this machine is possible. Recommended: the agent prepares everything and runs `npm publish --dry-run`; the user runs the real `npm publish --access public` (or says "publish" explicitly for that one step).
+1. **Who runs `pnpm publish`.** `pnpm whoami` here is `devopsnext`, so publishing from this machine is possible. Recommended: the agent prepares everything and runs `pnpm publish --dry-run`; the user runs the real `pnpm publish --access public` (or says "publish" explicitly for that one step).
 2. **Version.** Recommended `0.1.0` (first release, API may still move), since nothing is published yet.
 3. **Shim.** Recommended: keep `src/components/common/kit-table.jsx` as the single place that binds `next/link` to `renderLink` (17 lines), rather than editing 14 call sites to pass it. Pages keep their import path.
 
@@ -67,8 +68,8 @@ A published version cannot be edited, so the deferred minors that are cheap and 
 - [ ] **2.1 CI.** Model `.github/workflows/ci.yml` on the sibling libraries' (checkout, pnpm, node 22, `pnpm install --frozen-lockfile`, `pnpm verify`, `pnpm pack` + `pnpm pack:check`). Push; CI must be green on the branch.
 - [ ] **2.2 Publish metadata.** Add `repository`, `homepage`, `bugs`, `publishConfig: {access: "public"}`, and `prepublishOnly: "pnpm verify && pnpm pack:check"` (pack first inside the script). Keep `*.tgz` ignored; document that the tarball is a build artifact.
 - [ ] **2.3 PR.** Open a PR `feat/initial-table` → `main` in `thinktalentservice-ai/starterkit-table`. **Stop: user reviews and merges.**
-- [ ] **2.4 Dry run.** On `main`: `npm publish --dry-run`. Expected: file list = `dist`, `styles.css`, `README.md`, `LICENSE`, `package.json` only. **Stop: user decides to publish** (decision 1).
-- [ ] **2.5 Publish and tag.** `npm publish --access public`; `git tag v0.1.0 && git push origin v0.1.0`. Verify: `npm view @devopsnext/starterkit-table version` prints `0.1.0`; record `npm view @devopsnext/starterkit-table time --json` for the release-age marker. (Never read a single time key with a dotted path: npm splits on dots and returns nothing.)
+- [ ] **2.4 Dry run.** On `main`: `pnpm publish --dry-run`. Expected: file list = `dist`, `styles.css`, `README.md`, `LICENSE`, `package.json` only. **Stop: user decides to publish** (decision 1).
+- [ ] **2.5 Publish and tag.** `pnpm publish --access public`; `git tag v0.1.0 && git push origin v0.1.0`. Verify: `pnpm view @devopsnext/starterkit-table version` prints `0.1.0`; record `pnpm view @devopsnext/starterkit-table time --json` for the release-age marker. (Never read a single time key with a dotted path: the registry client splits on dots and returns nothing.)
 
 ### Stage 3: Host adopts the published version
 

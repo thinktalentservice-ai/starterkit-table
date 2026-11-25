@@ -131,3 +131,11 @@ pnpm verify      # typecheck + test + build
 pnpm pack        # -> devopsnext-starterkit-table-<version>.tgz
 pnpm pack:check  # fails if the tarball holds anything but dist, styles.css, README, LICENSE
 ```
+
+## Release
+
+This repo uses pnpm throughout (the `packageManager` field pins the version).
+From `main`, with a clean tree: `pnpm publish --access public` (the `prepublishOnly`
+script runs `pnpm verify` first), then `git tag vX.Y.Z && git push origin vX.Y.Z`. Check a
+release with `pnpm view @devopsnext/starterkit-table version`. A dry run anywhere:
+`pnpm publish --dry-run --no-git-checks`.
