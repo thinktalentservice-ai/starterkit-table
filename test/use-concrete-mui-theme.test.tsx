@@ -1,0 +1,51 @@
+import type { ReactNode } from "react";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { ThemeProvider } from "@mui/material/styles";
+import { createStarterkitTheme } from "@devopsnext/starterkit-theme/mui";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { TOKEN_NAMES, useConcreteMuiTheme } from "../src/use-concrete-mui-theme";
+
+const wrapper = ({ children }: { children: ReactNode }) => (
+  <ThemeProvider theme={createStarterkitTheme()}>{children}</ThemeProvider>
+);
+
+const setTokens = (skip?: string) => {
+  for (const name of TOKEN_NAMES) {
+    if (name !== skip) document.documentElement.style.setProperty(name, "rgb(10, 20, 30)");
+  }
+};
+
+describe("useConcreteMuiTheme", () => {
+  beforeEach(() => setTokens());
+  afterEach(() => {
+    document.documentElement.removeAttribute("style");
+    document.documentElement.removeAttribute("data-mui-color-scheme");
+    vi.restoreAllMocks();
+  });
+
+  it("builds a theme whose palette is concrete rgb colours MUI can parse", async () => {
+    const { result } = renderHook(() => useConcreteMuiTheme(), { wrapper });
+    await waitFor(() => expect(result.current).not.toBeNull());
+    expect(result.current?.palette.primary.main).toMatch(/^rgb/);
+    expect(result.current?.kitTable.baseBackgroundColor).toMatch(/^rgb/);
+  });
+
+  it("returns null and names the missing token when a token is undefined", async () => {
+    document.documentElement.removeAttribute("style");
+    setTokens("--card");
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { result } = renderHook(() => useConcreteMuiTheme(), { wrapper });
+    await waitFor(() => expect(spy).toHaveBeenCalled());
+    expect(result.current).toBeNull();
+    expect(String(spy.mock.calls[0]?.[0])).toContain("--card");
+  });
+
+  it("rebuilds in dark mode when data-mui-color-scheme flips on <html>", async () => {
+    const { result } = renderHook(() => useConcreteMuiTheme(), { wrapper });
+    await waitFor(() => expect(result.current).not.toBeNull());
+    await act(async () => {
+      document.documentElement.setAttribute("data-mui-color-scheme", "dark");
+    });
+    await waitFor(() => expect(result.current?.palette.mode).toBe("dark"));
+  });
+});
