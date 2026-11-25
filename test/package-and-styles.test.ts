@@ -14,6 +14,28 @@ describe("package contract", () => {
   });
 });
 
+const rule = (selector: string): string => {
+  const start = css.indexOf(`${selector} {`);
+  if (start < 0) return "";
+  return css.slice(start, css.indexOf("}", start));
+};
+
+describe("styles.css: standalone Pager vs in-table Pager", () => {
+  it("gives the standalone .skt-pager a top border on the elevated surface", () => {
+    const base = rule(".skt-pager");
+    expect(base).toContain("border-top: 1px solid var(--border)");
+    expect(base).toContain("background: var(--surface-elevated)");
+    expect(base).not.toContain("--primary-channel");
+  });
+
+  it("applies the soft rounded primary wash only inside the table frame", () => {
+    const inFrame = rule(".skt-frame .skt-pager");
+    expect(inFrame).toContain("rgb(var(--primary-channel) / 0.06)");
+    expect(inFrame).toContain("border-radius: 10px");
+    expect(inFrame).toContain("border-top: 0");
+  });
+});
+
 describe("styles.css", () => {
   it("keeps the loading placeholder transparent, as in the app (no grey block while the theme resolves)", () => {
     expect(css).toMatch(/\.skt-frame\.skt-placeholder\s*\{[^}]*background:\s*transparent/);

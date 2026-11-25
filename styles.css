@@ -42,18 +42,27 @@
 .skt-link-btn:disabled { color: var(--fg-muted); cursor: default; }
 .skt-link-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 3px; }
 
-/* ── Pager: a soft rounded band under the table, a faint primary wash ─── */
+/* ── Pager ───────────────────────────────────────────────────────────── */
+/* Standalone: a footer strip with a hairline on the elevated surface. */
 .skt-pager {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 10px;
   padding: 10px 16px;
-  border-radius: 10px;
-  background: rgb(var(--primary-channel) / 0.06);
+  border-top: 1px solid var(--border);
+  background: var(--surface-elevated);
   font-size: 13px;
   color: var(--fg2);
+}
+
+/* Inside the table frame: a soft rounded band under the table, a faint primary
+   wash echoing the header band's corners (10px, HEAD_RADIUS in kit-table.tsx). */
+.skt-frame .skt-pager {
+  margin-top: 10px;
+  border-top: 0;
+  border-radius: 10px;
+  background: rgb(var(--primary-channel) / 0.06);
 }
 
 .skt-pager__nav { display: flex; gap: 6px; }
