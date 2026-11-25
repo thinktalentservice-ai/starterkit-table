@@ -34,15 +34,40 @@ describe("KitTable", () => {
 
   it("renders rows and the result count", async () => {
     render(table());
-    // MRT highlights the matched "ali" in a <mark>, which splits the text node: assert on the row text.
-    expect(document.querySelector("tbody")).toHaveTextContent("Alice");
+    expect(await screen.findByText("Alice")).toBeInTheDocument();
     expect(screen.getByText("people", { exact: false, selector: ".skt-count" }).textContent).toBe("3 people");
   });
 
-  it("renders skeleton rows without throwing while loading with no data", async () => {
-    render(table({ isLoading: true, data: [] }));
-    await waitFor(() => expect(document.querySelector(".skt-table")).not.toBeNull());
+  it("renders skeleton rows without throwing while loading, even when getRowId reads nested fields", async () => {
+    // MRT feeds blank {} rows through getRowId while loading; a nested read would throw on them.
+    const nested = (r: Person) => (r as unknown as { group: { id: string } }).group.id;
+    render(table({ isLoading: true, data: [], getRowId: nested }));
+    await waitFor(() => expect(document.querySelector(".MuiSkeleton-root")).not.toBeNull());
     expect(screen.queryByText("Alice")).toBeNull();
+  });
+
+  it("renders no pager when there is no data", async () => {
+    render(table({ data: [] }));
+    await screen.findByText("Nothing here yet");
+    expect(document.querySelector(".skt-pager")).toBeNull();
+  });
+
+  it("renders no pager while loading (it would count MRT's skeleton rows)", async () => {
+    render(table({ isLoading: true, data: [] }));
+    await waitFor(() => expect(document.querySelector(".MuiSkeleton-root")).not.toBeNull());
+    expect(document.querySelector(".skt-pager")).toBeNull();
+  });
+
+  it("renders a rowActions JSX array as content, not as action items", async () => {
+    render(table({ rowActions: () => [<span key="a">AA-node</span>, <span key="b">BB-node</span>] }));
+    expect((await screen.findAllByText("AA-node")).length).toBe(3);
+    expect(screen.getAllByText("BB-node").length).toBe(3);
+    expect(document.querySelector(".skt-action")).toBeNull();
+  });
+
+  it("renders rowActions items as the joined action control", async () => {
+    render(table({ rowActions: (r) => [{ label: `Edit ${r.name}`, onClick: () => {} }] }));
+    expect(await screen.findByRole("button", { name: "Edit Alice" })).toBeInTheDocument();
   });
 
   it("filters rows as you type in the search box", async () => {
@@ -111,6 +136,8 @@ describe("KitTable", () => {
     await waitFor(() => expect(spy).toHaveBeenCalled());
     expect(document.querySelector('[aria-busy="true"]')).not.toBeNull();
     expect(screen.queryByText("Alice")).toBeNull();
+    const logged = String(spy.mock.calls[0]?.[0]);
+    for (const name of TOKEN_NAMES) expect(logged).toContain(name);
   });
 });
 

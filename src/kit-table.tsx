@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { isValidElement, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import Checkbox from "@mui/material/Checkbox";
 import { ThemeProvider } from "@mui/material/styles";
@@ -55,6 +55,14 @@ import { useConcreteMuiTheme } from "./use-concrete-mui-theme";
  */
 
 const PAGE_SIZES = [10, 25, 50];
+
+// `rowActions` may return RowActionItem[] (rendered as the joined control) or any
+// node. A ReactNode[] such as [<A/>, <B/>] is an array too, so decide by shape:
+// every entry must be a plain object with a string label, not a React element.
+const isActionItems = (out: unknown): out is RowActionItem[] =>
+  Array.isArray(out) &&
+  out.length > 0 &&
+  out.every((i) => i != null && typeof i === "object" && !isValidElement(i) && typeof (i as RowActionItem).label === "string");
 
 // Header band: a faint primary wash over the card surface, so it follows brand
 // and light/dark. Uses the exact same wash as the pager (.skt-pager in styles.css):
@@ -168,9 +176,11 @@ export type KitTableProps<T extends MRT_RowData> = Omit<
 
 function KitPager<T extends MRT_RowData>({ table, pageSizes }: { table: MRT_TableInstance<T>; pageSizes: number[] }) {
   "use no memo";
-  const { pageIndex, pageSize } = table.getState().pagination;
+  const { isLoading, pagination } = table.getState();
+  const { pageIndex, pageSize } = pagination;
   const total = table.getPrePaginationRowModel().rows.length;
-  if (total === 0) return null;
+  // While loading MRT counts its skeleton rows ("1–10 of 10", Next disabled).
+  if (isLoading || total === 0) return null;
 
   return (
     <Pager page={pageIndex + 1} pageSize={pageSize} total={total} onPage={(p) => table.setPageIndex(p - 1)}>
@@ -294,7 +304,7 @@ function KitTableInner<T extends MRT_RowData>({
   }, [rowSelection, tableData, rowIdOf]);
 
   // Each column's filter icon lists only the modes valid for it (filter-modes).
-  const modeColumns = useMemo(() => applyFilterModes(columns), [columns]);
+  const modeColumns = useMemo(() => applyFilterModes(columns, initialState), [columns, initialState]);
 
   const table = useMaterialReactTable<T>({
     columns: modeColumns,
@@ -350,7 +360,7 @@ function KitTableInner<T extends MRT_RowData>({
           // A group row's `original` is its first leaf: never act on it.
           if (row.getIsGrouped()) return null;
           const out = rowActions(row.original);
-          return Array.isArray(out) ? <RowActions items={out as RowActionItem[]} renderLink={renderLink} /> : out;
+          return isActionItems(out) ? <RowActions items={out} renderLink={renderLink} /> : (out as ReactNode);
         }
       : undefined,
     renderBottomToolbar: ({ table: t }) => <KitPager table={t} pageSizes={pageSizes} />,
