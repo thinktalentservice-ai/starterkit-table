@@ -39,6 +39,7 @@
     "@mui/icons-material": ">=6.0.0",
     "@mui/material": ">=9.0.0",
     "@mui/x-date-pickers": ">=9.0.0",
+    "lucide-react": ">=1.0.0",
     "material-react-table": "^3.2.1",
     "react": ">=18",
     "react-dom": ">=18"
@@ -59,6 +60,7 @@
     "@types/react-dom": "^19.2.3",
     "dayjs": "^1.11.23",
     "jsdom": "^26.1.0",
+    "lucide-react": "1.79.0",
     "material-react-table": "^3.2.1",
     "react": "19.2.6",
     "react-dom": "19.2.6",

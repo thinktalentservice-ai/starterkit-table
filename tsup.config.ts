@@ -15,6 +15,7 @@ export default defineConfig({
     "react-dom",
     "@mui/material",
     "@mui/icons-material",
+    "lucide-react",
     "@mui/x-date-pickers",
     "@emotion/react",
     "@emotion/styled",

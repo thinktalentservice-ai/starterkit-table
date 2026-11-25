@@ -124,3 +124,34 @@ describe("SearchInput", () => {
     expect(onChange).toHaveBeenCalledWith("");
   });
 });
+
+describe("icons come from lucide-react (not hand-drawn SVG)", () => {
+  it("SearchInput uses the lucide search icon, and the clear button the lucide x icon", () => {
+    const { container } = render(<SearchInput value="abc" onChange={() => {}} />);
+    expect(container.querySelector("svg.lucide-search")).not.toBeNull();
+    expect(container.querySelector("svg.lucide-x")).not.toBeNull();
+  });
+
+  it("Pager uses lucide chevrons", () => {
+    const { container } = render(<Pager page={2} pageSize={10} total={30} onPage={() => {}} />);
+    expect(container.querySelector("svg.lucide-chevron-left")).not.toBeNull();
+    expect(container.querySelector("svg.lucide-chevron-right")).not.toBeNull();
+  });
+
+  it("EmptyState uses the lucide inbox icon by default", () => {
+    const { container } = render(<EmptyState />);
+    expect(container.querySelector("svg.lucide-inbox")).not.toBeNull();
+  });
+
+  it("keeps the icon sizes the app used: search 15, clear 12, chevrons 15, inbox 20", () => {
+    const { container } = render(
+      <>
+        <SearchInput value="abc" onChange={() => {}} />
+        <Pager page={2} pageSize={10} total={30} onPage={() => {}} />
+        <EmptyState />
+      </>,
+    );
+    const size = (sel: string) => container.querySelector(sel)?.getAttribute("width");
+    expect([size("svg.lucide-search"), size("svg.lucide-x"), size("svg.lucide-chevron-left"), size("svg.lucide-inbox")]).toEqual(["15", "12", "15", "20"]);
+  });
+});

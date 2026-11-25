@@ -1,5 +1,5 @@
 import type { MouseEvent, ReactNode } from "react";
-import { ChevronLeftIcon, ChevronRightIcon, InboxIcon } from "./icons";
+import { ChevronLeft, ChevronRight, Inbox } from "lucide-react";
 
 export function Toolbar({ children }: { children?: ReactNode }) {
   return <div className="skt-toolbar">{children}</div>;
@@ -33,7 +33,7 @@ export function EmptyState({
   return (
     <div className="skt-empty" role="status">
       <span className="skt-empty__icon" aria-hidden="true">
-        {icon ?? <InboxIcon />}
+        {icon ?? <Inbox size={20} />}
       </span>
       <p className="skt-empty__title">{title}</p>
       {hint && <p className="skt-empty__hint">{hint}</p>}
@@ -74,7 +74,7 @@ export function Pager({
           onClick={() => onPage(current - 1)}
           aria-label="Previous page"
         >
-          <ChevronLeftIcon />
+          <ChevronLeft size={15} aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -83,7 +83,7 @@ export function Pager({
           onClick={() => onPage(current + 1)}
           aria-label="Next page"
         >
-          <ChevronRightIcon />
+          <ChevronRight size={15} aria-hidden="true" />
         </button>
       </div>
     </div>

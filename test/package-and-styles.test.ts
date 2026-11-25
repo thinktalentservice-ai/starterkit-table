@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const pkg = JSON.parse(readFileSync("package.json", "utf8"));
@@ -39,5 +39,12 @@ describe("styles.css: standalone Pager vs in-table Pager", () => {
 describe("styles.css", () => {
   it("keeps the loading placeholder transparent, as in the app (no grey block while the theme resolves)", () => {
     expect(css).toMatch(/\.skt-frame\.skt-placeholder\s*\{[^}]*background:\s*transparent/);
+  });
+});
+
+describe("icons", () => {
+  it("declares lucide-react as a peer and ships no hand-drawn icon module", () => {
+    expect(pkg.peerDependencies["lucide-react"]).toBeDefined();
+    expect(existsSync("src/icons.tsx")).toBe(false);
   });
 });

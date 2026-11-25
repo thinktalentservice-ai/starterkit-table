@@ -13,7 +13,7 @@ pnpm add @devopsnext/starterkit-table@<version>
 ```
 
 Peers (install them in the host, one copy each): `react`, `react-dom` (>=18),
-`@mui/material` (>=9), `@mui/icons-material` (>=6, imported by material-react-table),  `@mui/x-date-pickers`, `material-react-table` (^3.2.1),
+`@mui/material` (>=9), `@mui/icons-material` (>=6, imported by material-react-table), `lucide-react` (>=1, the search, clear, pager and empty-state icons), `@mui/x-date-pickers`, `material-react-table` (^3.2.1),
 `@emotion/react`, `@emotion/styled`, and `@devopsnext/starterkit-theme` (>=1.7.0).
 
 ## Use
@@ -64,6 +64,10 @@ straight to `useMaterialReactTable`. The full contract is the doc comment on
 
 `renderLink` renders row-action items that have `to`. Without it they are plain
 `<a href>`; pass your router's link to get client-side navigation.
+
+Icons: the table's own icons are `lucide-react` (same set the System Owner app uses). The
+full-screen toggle uses `@mui/icons-material` so it matches the MRT buttons beside it
+(filters, columns, density), which are MUI icons.
 
 ### Toolbar options
 

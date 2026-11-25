@@ -2,7 +2,7 @@ import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
 import TextField from "@mui/material/TextField";
 import type { TextFieldProps } from "@mui/material/TextField";
-import { SearchIcon, XIcon } from "./icons";
+import { Search, X } from "lucide-react";
 
 export type SearchInputProps = Omit<TextFieldProps<"outlined">, "onChange" | "value" | "variant"> & {
   value: string;
@@ -36,13 +36,13 @@ export function SearchInput({
         input: {
           startAdornment: (
             <InputAdornment position="start" sx={{ color: "var(--fg-muted)" }}>
-              <SearchIcon />
+              <Search size={15} aria-hidden="true" />
             </InputAdornment>
           ),
           endAdornment: value ? (
             <InputAdornment position="end">
               <IconButton size="small" edge="end" title="Clear search" aria-label="Clear search" onClick={clear}>
-                <XIcon />
+                <X size={12} aria-hidden="true" />
               </IconButton>
             </InputAdornment>
           ) : null,
