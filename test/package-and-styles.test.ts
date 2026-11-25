@@ -48,3 +48,34 @@ describe("icons", () => {
     expect(existsSync("src/icons.tsx")).toBe(false);
   });
 });
+
+describe("publish metadata", () => {
+  it("publishes publicly under the @devopsnext scope", () => {
+    expect(pkg.name).toBe("@devopsnext/starterkit-table");
+    expect(pkg.publishConfig).toEqual({ access: "public" });
+  });
+
+  it("points at the repository, issues and a homepage", () => {
+    expect(pkg.repository).toEqual({ type: "git", url: "git+https://github.com/thinktalentservice-ai/starterkit-table.git" });
+    expect(pkg.bugs).toEqual({ url: "https://github.com/thinktalentservice-ai/starterkit-table/issues" });
+    expect(pkg.homepage).toBe("https://github.com/thinktalentservice-ai/starterkit-table#readme");
+  });
+
+  it("refuses to publish unless the full gate passes", () => {
+    expect(pkg.scripts.prepublishOnly).toBe("pnpm verify");
+  });
+
+  it("pins the package manager so CI and contributors resolve the same pnpm", () => {
+    expect(pkg.packageManager).toMatch(/^pnpm@\d+\.\d+\.\d+$/);
+  });
+});
+
+describe("CI workflow", () => {
+  const ci = readFileSync(".github/workflows/ci.yml", "utf8");
+  it("runs the verify gate on push to main and on pull requests, frozen lockfile", () => {
+    expect(ci).toMatch(/push:\s*\n\s*branches: \[main\]/);
+    expect(ci).toContain("pull_request:");
+    expect(ci).toContain("pnpm install --frozen-lockfile");
+    expect(ci).toContain("pnpm verify");
+  });
+});

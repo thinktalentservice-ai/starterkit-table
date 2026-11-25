@@ -3,6 +3,18 @@
   "version": "0.1.0",
   "description": "Think Talent page-kit data table on material-react-table: toolbar, filter modes, pager, row actions. Token-driven via @devopsnext/starterkit-theme.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thinktalentservice-ai/starterkit-table.git"
+  },
+  "bugs": {
+    "url": "https://github.com/thinktalentservice-ai/starterkit-table/issues"
+  },
+  "homepage": "https://github.com/thinktalentservice-ai/starterkit-table#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "packageManager": "pnpm@12.18.0",
   "type": "module",
   "sideEffects": [
     "*.css"
@@ -30,7 +42,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "pack:check": "node scripts/check-pack.mjs",
-    "verify": "pnpm typecheck && pnpm test && pnpm build && pnpm pack && pnpm pack:check"
+    "verify": "pnpm typecheck && pnpm test && pnpm build && pnpm pack && pnpm pack:check",
+    "prepublishOnly": "pnpm verify"
   },
   "peerDependencies": {
     "@devopsnext/starterkit-theme": ">=1.7.0",
