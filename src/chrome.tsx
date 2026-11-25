@@ -55,8 +55,11 @@ export function Pager({
   children?: ReactNode;
 }) {
   const pages = Math.max(1, Math.ceil(total / pageSize));
-  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const end = Math.min(page * pageSize, total);
+  // A page past the end (rows removed while on the last page) reads as the last
+  // page, not as an inverted "31–25 of 25".
+  const current = Math.min(Math.max(page, 1), pages);
+  const start = total === 0 ? 0 : (current - 1) * pageSize + 1;
+  const end = Math.min(current * pageSize, total);
   return (
     <div className="skt-pager">
       <div>{children}</div>
@@ -67,8 +70,8 @@ export function Pager({
         <button
           type="button"
           className="skt-pager__btn"
-          disabled={page <= 1}
-          onClick={() => onPage(page - 1)}
+          disabled={current <= 1}
+          onClick={() => onPage(current - 1)}
           aria-label="Previous page"
         >
           <ChevronLeftIcon />
@@ -76,8 +79,8 @@ export function Pager({
         <button
           type="button"
           className="skt-pager__btn"
-          disabled={page >= pages}
-          onClick={() => onPage(page + 1)}
+          disabled={current >= pages}
+          onClick={() => onPage(current + 1)}
           aria-label="Next page"
         >
           <ChevronRightIcon />

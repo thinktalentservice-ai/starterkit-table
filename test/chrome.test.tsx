@@ -47,6 +47,18 @@ describe("Pager", () => {
     expect(onPage).toHaveBeenCalledWith(2);
   });
 
+  it("clamps a page past the end to the last page instead of an inverted range", () => {
+    render(<Pager page={4} pageSize={10} total={25} onPage={() => {}} />);
+    expect(screen.getByText("21–25 of 25")).toBeInTheDocument();
+    expect(screen.getByLabelText("Next page")).toBeDisabled();
+  });
+
+  it("clamps page 0 or negative to the first page", () => {
+    render(<Pager page={0} pageSize={10} total={25} onPage={() => {}} />);
+    expect(screen.getByText("1–10 of 25")).toBeInTheDocument();
+    expect(screen.getByLabelText("Previous page")).toBeDisabled();
+  });
+
   it("shows 0–0 of 0 when empty and keeps both buttons disabled", () => {
     render(<Pager page={1} pageSize={10} total={0} onPage={() => {}} />);
     expect(screen.getByText("0–0 of 0")).toBeInTheDocument();
