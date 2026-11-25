@@ -70,6 +70,13 @@ describe("KitTable", () => {
     await waitFor(() => expect(screen.queryByRole("region", { name: "Selected rows" })).toBeNull());
   });
 
+  it("selects rows when getRowId is omitted (ids fall back to the index MRT uses)", async () => {
+    render(table({ bulkActions: () => <button type="button">Do it</button>, getRowId: undefined }));
+    await screen.findByText("Alice");
+    await userEvent.click(screen.getAllByLabelText("Select row")[0]!);
+    expect(await screen.findByRole("region", { name: "Selected rows" })).toBeInTheDocument();
+  });
+
   it("drops a selected row that is no longer in data after a refetch", async () => {
     const bulk = () => <button type="button">Do it</button>;
     const { rerender } = render(table({ bulkActions: bulk }));

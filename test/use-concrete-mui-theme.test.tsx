@@ -49,4 +49,34 @@ describe("useConcreteMuiTheme", () => {
     });
     await waitFor(() => expect(result.current?.palette.mode).toBe("dark"));
   });
+
+  it("keeps the last good theme when a token later disappears, and logs the missing set once", async () => {
+    const { result } = renderHook(() => useConcreteMuiTheme(), { wrapper });
+    await waitFor(() => expect(result.current).not.toBeNull());
+    const good = result.current;
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    await act(async () => {
+      document.documentElement.removeAttribute("style");
+    });
+    await act(async () => {
+      document.documentElement.setAttribute("class", "a");
+      document.documentElement.setAttribute("class", "b");
+    });
+    expect(result.current).toBe(good);
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it("builds the theme once tokens arrive in a stylesheet added to <head> after mount", async () => {
+    document.documentElement.removeAttribute("style");
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { result } = renderHook(() => useConcreteMuiTheme(), { wrapper });
+    await act(async () => {});
+    expect(result.current).toBeNull();
+    await act(async () => {
+      const style = document.createElement("style");
+      style.textContent = ":root{" + TOKEN_NAMES.map((n) => n + ":rgb(10, 20, 30)").join(";") + "}";
+      document.head.appendChild(style);
+    });
+    await waitFor(() => expect(result.current).not.toBeNull());
+  });
 });

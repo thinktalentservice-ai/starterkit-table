@@ -90,13 +90,22 @@ export function useConcreteMuiTheme(): KitMuiTheme | null {
   useEffect(() => {
     const root = document.documentElement;
 
+    // Logged once per distinct missing set, not on every <html> write.
+    let reported = "";
+
     const build = () => {
       const { colors: c, missing } = resolveTokens();
       if (missing.length) {
-        console.error(`[starterkit-table] theme tokens unresolved, table theme not built: ${missing.join(", ")}`);
-        setTheme(null);
+        const key = missing.join(", ");
+        if (key !== reported) {
+          reported = key;
+          console.error(`[starterkit-table] theme tokens unresolved, table theme not built: ${key}`);
+        }
+        // Keep a theme that already built: dropping it would unmount the table
+        // and lose its search, sort, selection and page.
         return;
       }
+      reported = "";
       const isDark = (root.dataset.muiColorScheme || scheme) === "dark";
       const base = createStarterkitTheme();
       const scoped = createTheme({
@@ -133,7 +142,18 @@ export function useConcreteMuiTheme(): KitMuiTheme | null {
       attributes: true,
       attributeFilter: ["data-mui-color-scheme", "data-theme", "class", "style"],
     });
-    return () => observer.disconnect();
+    // The preset sheet may land after this effect runs (CSS injected after
+    // hydration, a stylesheet <link> finishing, a brand sheet swapped at runtime).
+    // Retry when <head> changes and when any stylesheet finishes loading;
+    // <link> load events do not bubble, hence capture.
+    const headObserver = new MutationObserver(build);
+    headObserver.observe(document.head, { childList: true, subtree: true });
+    document.addEventListener("load", build, true);
+    return () => {
+      observer.disconnect();
+      headObserver.disconnect();
+      document.removeEventListener("load", build, true);
+    };
   }, [scheme]);
 
   return theme;

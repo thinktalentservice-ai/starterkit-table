@@ -280,10 +280,18 @@ function KitTableInner<T extends MRT_RowData>({
 
   // Only rows still in the data count as selected: a refetch that removes a
   // row (deleted, mapped elsewhere) must not leave it in a bulk action.
+  // While loading, MRT feeds blank skeleton rows ({}) through getRowId, so a
+  // caller's `row.group.groupId` would throw. Index ids until real rows land.
+  // The SAME function feeds MRT and the selection filter below: they must agree
+  // on ids, or every selection is filtered out.
+  const rowIdOf = useMemo<(row: T, index: number) => string>(
+    () => (isLoading || !getRowId ? (_row, i) => `row-${i}` : getRowId),
+    [isLoading, getRowId],
+  );
   const liveSelection = useMemo(() => {
-    const ids = new Set(tableData.map((row, i) => (getRowId ? getRowId(row, i) : String(i))));
+    const ids = new Set(tableData.map((row, i) => rowIdOf(row, i)));
     return Object.fromEntries(Object.entries(rowSelection).filter(([id, on]) => on && ids.has(id)));
-  }, [rowSelection, tableData, getRowId]);
+  }, [rowSelection, tableData, rowIdOf]);
 
   // Each column's filter icon lists only the modes valid for it (filter-modes).
   const modeColumns = useMemo(() => applyFilterModes(columns), [columns]);
@@ -291,9 +299,7 @@ function KitTableInner<T extends MRT_RowData>({
   const table = useMaterialReactTable<T>({
     columns: modeColumns,
     data: tableData,
-    // While loading, MRT feeds blank skeleton rows ({}) through getRowId, so a
-    // caller's `row.group.groupId` would throw. Index ids until real rows land.
-    getRowId: isLoading || !getRowId ? (_row, i) => `row-${i}` : getRowId,
+    getRowId: rowIdOf,
     mrtTheme: (theme) => (theme as unknown as { kitTable: Record<string, string> }).kitTable,
 
     enableTopToolbar: false,

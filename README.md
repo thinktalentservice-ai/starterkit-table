@@ -13,7 +13,7 @@ pnpm add @devopsnext/starterkit-table@<version>
 ```
 
 Peers (install them in the host, one copy each): `react`, `react-dom` (>=18),
-`@mui/material` (>=9), `@mui/x-date-pickers`, `material-react-table` (^3.2.1),
+`@mui/material` (>=9), `@mui/icons-material` (>=6, imported by material-react-table), `@mui/x-date-pickers`, `material-react-table` (^3.2.1),
 `@emotion/react`, `@emotion/styled`, and `@devopsnext/starterkit-theme` (>=1.7.0).
 
 ## Use

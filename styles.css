@@ -174,9 +174,14 @@
   overflow: hidden;
 }
 
-.skt-placeholder {
-  min-height: 420px;
-  background: var(--surface-elevated);
+.skt-placeholder { min-height: 420px; }
+
+/* Holds the table's space while the theme resolves. Compound selector so it beats
+   .skt-frame whatever the order; transparent, so mounting does not flash a block. */
+.skt-frame.skt-placeholder {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 /* Selection strip: the frame's top edge turns into the bulk-action bar. */
