@@ -1,0 +1,140 @@
+/*
+ * @devopsnext/starterkit-table: styles.
+ *
+ * Tokens only. Every colour, radius and font below is a var(--token) from
+ * @devopsnext/starterkit-theme, so the host must load a preset sheet and the
+ * theme's styles.css first. No colour literals live in this file.
+ *
+ * Classes are prefixed `skt-` so they cannot collide with an app's own
+ * page-kit CSS. Ported from the System Owner app's _page-kit.scss and
+ * _kit-table.scss, SCSS nesting flattened.
+ */
+
+/* ── Toolbar ─────────────────────────────────────────────────────────── */
+.skt-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.skt-toolbar__spacer { flex: 1 1 auto; }
+
+.skt-count {
+  font-size: 13px;
+  color: var(--fg2);
+  font-variant-numeric: tabular-nums;
+}
+
+.skt-count b { color: var(--fg1); font-weight: 600; }
+
+/* ── Link-styled button (selection strip "Clear selection") ───────────── */
+.skt-link-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-text);
+  cursor: pointer;
+}
+
+.skt-link-btn:disabled { color: var(--fg-muted); cursor: default; }
+.skt-link-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 3px; }
+
+/* ── Pager: a soft rounded band under the table, a faint primary wash ─── */
+.skt-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: rgb(var(--primary-channel) / 0.06);
+  font-size: 13px;
+  color: var(--fg2);
+}
+
+.skt-pager__nav { display: flex; gap: 6px; }
+
+.skt-pager__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--fg1);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.skt-pager__btn:not(:disabled):hover { border-color: var(--primary-border); background: var(--primary-bg); color: var(--primary-text); }
+.skt-pager__btn:disabled { opacity: 0.35; cursor: default; }
+.skt-pager__btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* ── Row actions: one joined control instead of a row of circles ──────── */
+.skt-actions {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  overflow: hidden;
+}
+
+.skt-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 34px;
+  height: 32px;
+  padding: 0 9px;
+  border: none;
+  border-left: 1px solid var(--border);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg2);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.12s, color 0.12s;
+}
+
+.skt-action:first-child { border-left: none; }
+.skt-action:hover, .skt-action:focus-visible { background: var(--primary-bg); color: var(--primary-text); }
+.skt-action:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.skt-action--primary { color: var(--primary-text); font-weight: 600; }
+
+/* ── Empty state ──────────────────────────────────────────────────────── */
+.skt-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 260px;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.skt-empty__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  color: var(--fg2);
+}
+
+.skt-empty__title { font-size: 15px; font-weight: 600; color: var(--fg1); margin: 0; }
+.skt-empty__hint { font-size: 13px; color: var(--fg2); margin: 0; max-width: 42ch; }

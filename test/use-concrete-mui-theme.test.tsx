@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { ThemeProvider } from "@mui/material/styles";
 import { createStarterkitTheme } from "@devopsnext/starterkit-theme/mui";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -18,6 +18,7 @@ const setTokens = (skip?: string) => {
 describe("useConcreteMuiTheme", () => {
   beforeEach(() => setTokens());
   afterEach(() => {
+    cleanup(); // unmount first so the <html> observer is gone before the tokens are removed
     document.documentElement.removeAttribute("style");
     document.documentElement.removeAttribute("data-mui-color-scheme");
     vi.restoreAllMocks();
