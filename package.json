@@ -1,0 +1,93 @@
+{
+  "name": "@devopsnext/starterkit-table",
+  "version": "0.1.0",
+  "description": "Think Talent page-kit data table on material-react-table: toolbar, filter modes, pager, row actions. Token-driven via @devopsnext/starterkit-theme.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thinktalentservice-ai/starterkit-table.git"
+  },
+  "bugs": {
+    "url": "https://github.com/thinktalentservice-ai/starterkit-table/issues"
+  },
+  "homepage": "https://github.com/thinktalentservice-ai/starterkit-table#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "packageManager": "pnpm@12.18.0",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "files": [
+    "dist",
+    "styles.css",
+    "README.md"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles.css": "./styles.css"
+  },
+  "scripts": {
+    "build": "tsc --noEmit && tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "pack:check": "node scripts/check-pack.mjs",
+    "verify": "pnpm typecheck && pnpm test && pnpm build && pnpm pack && pnpm pack:check",
+    "prepublishOnly": "pnpm verify"
+  },
+  "peerDependencies": {
+    "@devopsnext/starterkit-theme": ">=1.7.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": ">=6.0.0",
+    "@mui/material": ">=9.0.0",
+    "@mui/x-date-pickers": ">=9.0.0",
+    "lucide-react": ">=1.0.0",
+    "material-react-table": "^3.2.1",
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@devopsnext/starterkit-theme": "1.7.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.6.0",
+    "@mui/material": "^9.6.0",
+    "@mui/x-date-pickers": "^9.18.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "dayjs": "^1.11.23",
+    "jsdom": "^26.1.0",
+    "lucide-react": "1.79.0",
+    "material-react-table": "^3.2.1",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "react",
+    "table",
+    "material-react-table",
+    "design-system"
+  ]
+}

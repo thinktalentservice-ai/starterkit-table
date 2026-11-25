@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      # Action versions match the sibling starterkit repos so the workflows do not drift.
+      - uses: actions/checkout@v7
+
+      # No `version:` here: pnpm/action-setup reads package.json "packageManager",
+      # so CI and contributors resolve the same pnpm.
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # typecheck + tests + build + pack + pack:check (tarball contents, "use client"
+      # banner intact, tarball newer than the source).
+      - run: pnpm verify
